@@ -6,7 +6,7 @@
 - Brave est la cible de validation. L'utilisateur choisit le raccourci de l'extension dans `brave://extensions/shortcuts` ; Cmd+T est l'expérience visée. Ne pas transformer les restrictions de Chrome en interdiction supposée sur Brave.
 - La référence est la Command Bar d'Arc desktop, pas l'application mobile Arc Search ni son moteur de réponses IA.
 - Lire [la recherche et les captures](docs/research/arc-command-bar.md) avant de concevoir l'interface ou son activation.
-- v0.1.0 : ouverture/fermeture de la palette, URL/recherche via le moteur par défaut, recherche et activation d'onglets ouverts, recherche dans tous les dossiers de favoris. Historique et commandes supplémentaires restent hors périmètre.
+- v0.1.1 : ouverture/fermeture de la palette, URL/recherche via le moteur par défaut, recherche et activation d'onglets ouverts, recherche dans tous les dossiers de favoris. Historique et commandes supplémentaires restent hors périmètre.
 - Pas de navigateur complet, de sidebar, de Spaces, de synchronisation, de compte, de backend, d'IA ou de paiement dans ce premier périmètre.
 
 ## État et commandes
@@ -15,7 +15,7 @@
 - Node.js >= 22 pour les outils de développement. Aucune installation de paquets n'est nécessaire. Les skills sont dans `.agents/skills/` et leur inventaire dans `skills-lock.json`.
 - `npm test` : tests Node de logique et du contrôleur avec API simulées. `npm run check` : syntaxe JavaScript, manifeste et ressources. Ces deux commandes ont été exécutées avec succès au bootstrap.
 - `npm run preview` : aperçu local sur `http://127.0.0.1:4173/preview.html`, avec les vrais scripts UI et des données fictives. Commande vérifiée ; aucun test réel d'extension Brave ne doit en être déduit.
-- [README](README.md) : chargement, raccourci, limites et variantes de l'aperçu. [Validation v0.1.0](docs/validation/v0.1.0.md) : preuves et essais Brave restant à effectuer.
+- [README](README.md) : chargement, raccourci, limites et variantes de l'aperçu. [Validation v0.1.0 et v0.1.1](docs/validation/v0.1.0.md) : preuves et essais Brave restant à effectuer.
 
 ## Sources, documentation et skills
 
@@ -37,6 +37,7 @@
 - Préserver l'impression native d'Arc : panneau flottant arrondi, fond discret, ombre douce, sélection teintée. Éviter une page de dashboard ou une grille de cartes.
 - Prévoir clair/sombre, contraste lisible, zoom et petites fenêtres ; respecter `prefers-reduced-motion`.
 - À l'ouverture, placer le focus dans la recherche. Prévoir flèches pour sélectionner, Entrée pour exécuter et Échap pour fermer ; restaurer le focus précédent à la fermeture.
+- Fermer la palette quand le document devient masqué ou quitte la page ; annuler les rappels de focus et retirer les écouteurs. Ne pas forcer le focus vers la page quittée. Pendant l'ouverture, préserver le focus dans la palette et intercepter ses touches avant les raccourcis de la page sans annuler l'édition native ou l'IME.
 - Garder une navigation Tab accessible. Un éventuel mode « Actions » inspiré de Tab dans Arc doit être conçu explicitement, sans bloquer la navigation clavier.
 - Employer les rôles accessibles adaptés au champ, aux suggestions et à la sélection ; annoncer les changements utiles aux lecteurs d'écran.
 - Distinguer URL, recherche web et activation d'un onglet. Afficher la destination ; ne pas créer un doublon lorsqu'une action « aller à cet onglet » est sélectionnée.

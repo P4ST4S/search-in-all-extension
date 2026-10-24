@@ -14,6 +14,8 @@
   let opened = false;
   let session = 0;
   let lastWarnings = [];
+  let focusFrame = 0;
+  let refocusing = false;
 
   const styles = `
     :host { all: initial; color-scheme: light dark; --surface: #f9f8fc; --text: #282532; --muted: #655f73;
@@ -85,25 +87,49 @@
     return node;
   }
 
-  function close() {
+  function close(restoreFocus = true) {
     if (!opened) return;
     opened = false;
     session++;
     state.begin();
-    document.removeEventListener('keydown', keydown, true);
-    document.removeEventListener('keypress', containKey, true);
-    document.removeEventListener('keyup', containKey, true);
+    cancelAnimationFrame(focusFrame);
+    window.removeEventListener('keydown', keydown, true);
+    window.removeEventListener('keypress', containKey, true);
+    window.removeEventListener('keyup', containKey, true);
+    document.removeEventListener('visibilitychange', visibilityChanged);
+    window.removeEventListener('pagehide', leavePage);
+    window.removeEventListener('focus', ensureFocus);
+    window.removeEventListener('focusin', keepFocus, true);
     dialog.close();
     host.remove();
     if (fallback) window.close();
-    else if (previous?.isConnected) previous.focus({ preventScroll: true });
+    else if (restoreFocus && previous?.isConnected) previous.focus({ preventScroll: true });
+  }
+
+  function leavePage() { close(false); }
+
+  function visibilityChanged() {
+    if (document.hidden) leavePage();
+  }
+
+  function ensureFocus() {
+    if (!opened || document.hidden || refocusing) return;
+    if (document.activeElement === host && [input, closeButton].includes(root.activeElement)) return;
+    refocusing = true;
+    try { input.focus({ preventScroll: true }); }
+    finally { refocusing = false; }
+  }
+
+  function keepFocus(event) {
+    // Host focus traps must not redirect focus away from the active modal.
+    event.stopImmediatePropagation();
+    ensureFocus();
   }
 
   function containKey(event) {
-    if (event.composedPath().includes(host)) {
-      event.stopImmediatePropagation();
-      if (event.type === 'keyup') ghostText();
-    }
+    if (!event.composedPath().includes(host)) return;
+    event.stopImmediatePropagation();
+    if (event.type === 'keyup') ghostText();
   }
 
   function ghostText() {
@@ -204,6 +230,7 @@
 
   function keydown(event) {
     if (!event.composedPath().includes(host)) return;
+    // Intercept before document-level shortcuts; leave native editing and IME uncancelled.
     event.stopImmediatePropagation();
     if (!event.isTrusted || event.isComposing || composing || event.keyCode === 229) return;
     if (event.key === 'Escape') { event.preventDefault(); close(); return; }
@@ -238,7 +265,7 @@
     host.style.setProperty('all', 'initial', 'important');
     if (fallback) host.setAttribute('data-fallback', '');
     // Keep titles and queries out of the host page’s DOM APIs; extension pages can use an open root.
-    root = host.attachShadow({ mode: fallback ? 'open' : 'closed' });
+    root = host.attachShadow({ mode: fallback ? 'open' : 'closed', delegatesFocus: true });
     const style = element('style', '', styles);
     dialog = element('dialog');
     dialog.setAttribute('aria-label', 'Ouvrir un onglet, un favori ou rechercher');
@@ -251,6 +278,7 @@
     ghost.setAttribute('aria-hidden', 'true');
     input = element('input');
     input.type = 'text';
+    input.autofocus = true;
     input.placeholder = 'Rechercher ou saisir une adresse';
     input.maxLength = 2048;
     input.autocomplete = 'off';
@@ -287,18 +315,27 @@
     dialog.append(panel);
     root.append(style, dialog);
     (document.body || document.documentElement).append(host);
+    window.addEventListener('focusin', keepFocus, true);
+    window.addEventListener('focus', ensureFocus);
+    window.addEventListener('pagehide', leavePage);
+    document.addEventListener('visibilitychange', visibilityChanged);
     dialog.showModal();
     input.focus({ preventScroll: true });
+    const currentSession = session;
+    focusFrame = requestAnimationFrame(() => {
+      focusFrame = 0;
+      if (opened && session === currentSession) ensureFocus();
+    });
     input.addEventListener('input', (event) => { if (event.isTrusted && !composing) void request(); });
     input.addEventListener('compositionstart', () => { composing = true; ghostText(); });
     input.addEventListener('compositionend', () => { composing = false; void request(); });
-    for (const event of ['click', 'keyup', 'select', 'scroll']) input.addEventListener(event, ghostText);
+    for (const event of ['click', 'select', 'scroll']) input.addEventListener(event, ghostText);
     dialog.addEventListener('cancel', (event) => { event.preventDefault(); close(); });
     dialog.addEventListener('click', (event) => { if (event.isTrusted && event.target === dialog) close(); });
     for (const event of ['click', 'pointerdown', 'pointerup']) dialog.addEventListener(event, (e) => e.stopPropagation());
-    document.addEventListener('keydown', keydown, true);
-    document.addEventListener('keypress', containKey, true);
-    document.addEventListener('keyup', containKey, true);
+    window.addEventListener('keydown', keydown, true);
+    window.addEventListener('keypress', containKey, true);
+    window.addEventListener('keyup', containKey, true);
     void request('INIT');
   }
 

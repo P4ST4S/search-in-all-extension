@@ -38,7 +38,20 @@ function togglePreview() {
   applyPreviewTheme();
 }
 document.getElementById('open').addEventListener('click', togglePreview);
-document.getElementById('previous').focus();
+const pageEditor = document.getElementById(previewOptions.get('editor') === 'chat' ? 'chat-editor' : 'previous');
+if (previewOptions.has('focus-race')) {
+  // Reproduce a site's capture-phase focus manager clearing focus on an unknown shadow host.
+  document.addEventListener('focusin', (event) => {
+    if (event.target.localName === 'arc-command-bar') {
+      document.activeElement.blur();
+      pageEditor.focus();
+    }
+  }, true);
+  document.addEventListener('keydown', (event) => {
+    if (event.target.localName === 'arc-command-bar' && ['Backspace', 'Delete'].includes(event.key)) event.preventDefault();
+  }, true);
+}
+pageEditor.focus();
 document.addEventListener('keydown', (event) => {
   if (event.key === 'F8' && event.isTrusted) {
     event.preventDefault();

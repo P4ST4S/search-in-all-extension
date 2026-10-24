@@ -1,4 +1,4 @@
-# Arc Command Bar pour Brave — v0.1.0
+# Arc Command Bar pour Brave — v0.1.1
 
 Une palette au clavier pour retrouver un onglet, ouvrir un favori ou rechercher avec le moteur par défaut de Brave. JavaScript et CSS natifs, aucune dépendance, aucun build.
 
@@ -20,6 +20,7 @@ L’association et la priorité de Cmd+T doivent être vérifiées dans la versi
 - **↑ / ↓** : choisir un résultat. **Entrée** : exécuter. Un onglet existant est activé avec sa fenêtre ; un favori, une adresse ou une recherche ouvre un nouvel onglet.
 - **Tab** : accepter le texte fantôme lorsqu’il existe et que le curseur est en fin de saisie, sans ouvrir la destination. Sinon, Tab et Maj+Tab naviguent entre le champ et le bouton de fermeture.
 - **Échap**, clic extérieur, bouton de fermeture ou second déclenchement : fermer. La page et son champ d’origine retrouvent le focus.
+- Changer d’onglet ferme la palette : elle ne reste pas affichée au retour. Cette fermeture ne demande pas de rendre le focus à la page quittée.
 - Une adresse HTTP(S), un domaine ou `localhost:port` produit « Ouvrir l’adresse ». Un domaine sans protocole utilise HTTPS ; pour un serveur local HTTP, saisir `http://localhost:port`.
 
 Les sources sont relues à chaque ouverture. Si un résultat disparaît avant son activation, la palette affiche une erreur et recharge les résultats. Aucun favori n’est modifié.
@@ -54,6 +55,7 @@ Variantes de vérification :
 - `?surface=fallback&theme=light` : force les règles claires dans cette fixture, sans changer le thème système.
 - `?failure=bookmarks` : source favoris indisponible.
 - `?failure=execute` : résultat disparu lors de l’exécution.
+- `?editor=chat&focus-race=1` : éditeur de chat fictif avec gestionnaires qui tentent de reprendre le focus et bloquent les touches de suppression. Vérifier la saisie dans la palette, Retour arrière, Suppr, Cmd+A puis suppression, Tab/Maj+Tab et la restitution du focus à l’éditeur après Échap. Ajouter `&surface=fallback` pour inspecter le champ dans une racine ouverte.
 
 L’aperçu ne valide ni les API d’extension, ni Cmd+T, ni le moteur par défaut de Brave. Les essais réalisés et la checklist Brave sont dans [le compte rendu de validation](docs/validation/v0.1.0.md).
 

@@ -18,10 +18,12 @@
 </head>
 <body>
   <main>
-    <h1>Arc Command Bar · v0.1.0</h1>
+    <h1>Arc Command Bar · v0.1.1</h1>
     <p>Aperçu de l’interface avec des données fictives. F8 simule le déclenchement. Les API Brave ne sont pas disponibles dans cet aperçu.</p>
     <button id="open" type="button">Ouvrir la palette</button>
     <p><label>Champ de départ <input id="previous" value="Mon texte reste ici"></label></p>
+    <p>Éditeur de chat fictif</p>
+    <div id="chat-editor" contenteditable="true" role="textbox" aria-label="Éditeur de chat fictif">Brouillon du chat à conserver</div>
     <p id="executed" role="status"></p>
     <p>Événements clavier reçus par la page hôte : <span id="host-keys">0</span></p>
   </main>
