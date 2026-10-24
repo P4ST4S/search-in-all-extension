@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const files = new Set(['/preview.html', '/tests/preview.js', '/extension/core.js', '/extension/palette.js']);
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
+const files = new Set(['/preview.html', '/tests/preview.js', '/tests/fixtures/github.png', '/tests/fixtures/github-dark.png', '/extension/core.js', '/extension/favicons.js', '/extension/palette.js']);
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.png': 'image/png' };
 createServer(async (request, response) => {
   const path = new URL(request.url, 'http://localhost').pathname;
   const file = path === '/' ? '/preview.html' : path;

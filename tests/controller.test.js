@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createController } from '../extension/controller.js';
+import { readFile } from 'node:fs/promises';
 
 function fixture() {
   const tabs = new Map([
@@ -51,6 +52,34 @@ test('INIT loads sources independently and SEARCH preserves the chosen priority'
   const result = await controller.handle({ type: 'SEARCH', query: 'ecole' }, sender);
   assert.deepEqual(result.results.map((item) => item.kind), ['tab', 'bookmark', 'search']);
   assert.equal(calls.filter(([kind]) => kind === 'bookmarks').length, 1);
+});
+
+test('favicon enrichment resolves only actual search results and does not delay text results', async (t) => {
+  const png = await readFile(new URL('./fixtures/github.png', import.meta.url));
+  const calls = [];
+  t.mock.method(globalThis, 'fetch', async (url) => {
+    calls.push(url);
+    return new Response(png, { headers: { 'Content-Type': 'image/bmp' } });
+  });
+  const { controller, sender } = fixture();
+  const message = { type: 'FAVICONS', query: 'ecole', url: 'https://forged.example', results: [{ url: 'https://forged.example' }] };
+  const text = await controller.handle({ type: 'SEARCH', query: 'ecole' }, sender);
+  assert.equal(calls.length, 0);
+  const enriched = await controller.handle(message, sender);
+  assert.equal(enriched.ok, true);
+  assert.deepEqual(enriched.results.map(({ kind, id }) => [kind, id]), text.results.map(({ kind, id }) => [kind, id]));
+  assert.ok(enriched.results[0].favicon.startsWith('data:image/png;base64,'));
+  assert.ok(enriched.results[1].favicon.startsWith('data:image/png;base64,'));
+  assert.equal(enriched.results[2].favicon, '');
+  assert.ok(calls.every((url) => !url.includes('forged')));
+  const count = calls.length;
+  await controller.handle(message, sender);
+  assert.equal(calls.length, count);
+  await controller.handle({ type: 'INIT' }, sender);
+  await controller.handle(message, sender);
+  assert.equal(calls.length, count * 2);
+  assert.equal((await controller.handle(message, { ...sender, id: 'foreign' })).ok, false);
+  for (const query of [undefined, {}, 'a'.repeat(2049)]) assert.equal((await controller.handle({ ...message, query }, sender)).ok, false);
 });
 
 test('an unavailable source leaves the other source and web search usable', async () => {

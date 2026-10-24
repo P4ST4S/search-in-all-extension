@@ -54,6 +54,8 @@
     .option[aria-selected="true"] { background: var(--selected); }
     .icon { flex: 0 0 30px; width: 30px; height: 30px; display: grid; place-items: center;
       font-size: 20px; border-radius: 7px; color: var(--accent); background: rgb(125 102 161 / .09); }
+    .icon:has(img) { background: transparent; }
+    .favicon { display: block; width: 24px; height: 24px; object-fit: contain; }
     .copy { min-width: 0; flex: 1; }
     .title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 500; line-height: 1.45; }
     .subtitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; line-height: 1.5; color: var(--muted); }
@@ -154,6 +156,16 @@
     ghostText();
   }
 
+  function showFavicon(icon, favicon) {
+    if (icon.querySelector('img') || !/^data:image\/png;base64,[A-Za-z0-9+/]+=*$/.test(favicon || '')) return;
+    const fallbackIcon = icon.textContent;
+    const image = element('img', 'favicon');
+    image.alt = '';
+    image.addEventListener('error', () => { icon.textContent = fallbackIcon; }, { once: true });
+    image.src = favicon;
+    icon.replaceChildren(image);
+  }
+
   function render(results) {
     list.replaceChildren();
     input.setAttribute('aria-expanded', String(results.length > 0));
@@ -166,6 +178,7 @@
       row.setAttribute('aria-selected', String(index === state.index));
       const icon = element('span', 'icon', icons[result.kind]);
       icon.setAttribute('aria-hidden', 'true');
+      showFavicon(icon, result.favicon);
       const copy = element('span', 'copy');
       const subtitle = result.kind === 'search' ? 'Rechercher sur le web' : result.url;
       row.setAttribute('aria-label', `${result.title}. ${labels[result.kind]}. ${subtitle}`);
@@ -194,12 +207,26 @@
       status.textContent = !response.ok ? response.error : lastWarnings.join(' ') ||
         (destination(input.value)?.kind === 'blocked' ? 'Seules les adresses HTTP et HTTPS peuvent être ouvertes.'
           : !state.results.length ? 'Saisissez une adresse ou une recherche.' : 'Onglets · Favoris · Web');
+      if (response.ok) void loadFavicons(revision, currentSession, input.value);
     } catch {
       if (!opened || currentSession !== session || !state.accept(revision, [])) return;
       status.textContent = 'Connexion à l’extension interrompue. Fermez puis rouvrez la palette.';
     } finally {
       if (opened && currentSession === session && state.isCurrent(revision)) input.setAttribute('aria-busy', 'false');
     }
+  }
+
+  async function loadFavicons(revision, currentSession, query) {
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'FAVICONS', query });
+      if (!response.ok || !opened || currentSession !== session || !state.isCurrent(revision)) return;
+      for (const [index, result] of response.results.entries()) {
+        const current = state.results[index];
+        if (current?.kind === result.kind && current.id === result.id && current.url === result.url) {
+          showFavicon(list.children[index].querySelector('.icon'), result.favicon);
+        }
+      }
+    } catch { /* Favicon failures must leave text results usable. */ }
   }
 
   async function execute() {

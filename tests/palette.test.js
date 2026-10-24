@@ -7,7 +7,7 @@ import '../extension/core.js';
 const source = await readFile(new URL('../extension/palette.js', import.meta.url), 'utf8');
 
 // Small DOM double for lifecycle/focus regressions; native text editing is checked in the browser.
-function mount({ blockHostKeys = false } = {}) {
+function mount({ blockHostKeys = false, reply = async () => ({ ok: true, results: [], warnings: [] }) } = {}) {
   class Events {
     listeners = new Map();
     addEventListener(type, listener, options = false) {
@@ -43,6 +43,8 @@ function mount({ blockHostKeys = false } = {}) {
     selectionEnd = 0;
     scrollLeft = 0;
     focusCalls = 0;
+    set textContent(value) { this.text = value; this.children = []; }
+    get textContent() { return this.text; }
     constructor(tagName) { super(); this.tagName = tagName; }
     append(...nodes) { for (const node of nodes) { node.parent = this; this.children.push(node); } }
     replaceChildren(...nodes) { this.children = []; this.append(...nodes); }
@@ -91,7 +93,7 @@ function mount({ blockHostKeys = false } = {}) {
   let nextFrame = 0;
   const sandbox = {
     ArcCore: globalThis.ArcCore, document, window, location: { href: 'https://host.example/' },
-    chrome: { runtime: { getURL: (path) => `chrome-extension://test/${path}`, async sendMessage() { return { ok: true, results: [], warnings: [] }; } } },
+    chrome: { runtime: { getURL: (path) => `chrome-extension://test/${path}`, sendMessage: reply } },
     requestAnimationFrame(callback) { frames.set(++nextFrame, callback); return nextFrame; },
     cancelAnimationFrame(id) { frames.delete(id); },
   };
@@ -186,4 +188,59 @@ test('host capture and bubbling handlers cannot cancel the palette editing keys'
     assert.equal(event.defaultPrevented, false, key);
     assert.equal(pageEvents, 0, key);
   }
+});
+
+test('favicon images are decorative and failed or untrusted images retain the generic icon', async () => {
+  const results = [
+    { kind: 'tab', id: 1, title: 'Site', url: 'https://site.example', favicon: 'data:image/png;base64,AA==' },
+    { kind: 'bookmark', id: 'b1', title: 'Favori', url: 'https://site.example', favicon: 'https://remote.example/icon.png' },
+    { kind: 'search', title: 'Rechercher', query: 'site', url: '' },
+  ];
+  const page = mount({ reply: async () => ({ ok: true, results, warnings: [] }) });
+  await new Promise(setImmediate);
+  const icon = page.host().root.querySelector('.icon');
+  const image = icon.querySelector('img');
+  assert.equal(image.src, results[0].favicon);
+  assert.equal(image.alt, '');
+  assert.equal(icon.attributes.get('aria-hidden'), 'true');
+  assert.equal(page.host().root.querySelector('.results').children[1].querySelector('img'), null);
+  image.emit('error');
+  assert.equal(icon.querySelector('img'), null);
+  assert.equal(icon.textContent, '▣');
+});
+
+test('late favicon responses cannot replace a newer query or reopen a dismissed palette', async () => {
+  const pending = [];
+  const result = (title) => [{ kind: 'tab', id: 1, title, url: 'https://site.example' }];
+  const page = mount({ reply: async (message) => message.type === 'FAVICONS'
+    ? new Promise((resolve) => pending.push(resolve)) : { ok: true, results: result(message.query || 'initial') } });
+  await new Promise(setImmediate);
+  page.input().value = 'new';
+  page.input().emit('input', { isTrusted: true });
+  await new Promise(setImmediate);
+  pending[0]({ ok: true, results: result('stale') });
+  await new Promise(setImmediate);
+  assert.equal(page.host().root.querySelector('.title').textContent, 'new');
+  page.sandbox.__arcCommandBar.toggle();
+  pending[1]({ ok: true, results: result('late') });
+  await new Promise(setImmediate);
+  assert.ok(!page.host());
+});
+
+test('favicon arrival preserves existing rows, scroll position and keyboard selection', async () => {
+  let finish;
+  const results = [1, 2].map((id) => ({ kind: 'tab', id, title: `Site ${id}`, url: `https://site${id}.example` }));
+  const page = mount({ reply: async (message) => message.type === 'FAVICONS'
+    ? new Promise((resolve) => { finish = resolve; }) : { ok: true, results } });
+  await new Promise(setImmediate);
+  const list = page.host().root.querySelector('.results');
+  const row = list.children[1];
+  page.keyboard('ArrowDown');
+  list.scrollTop = 50;
+  finish({ ok: true, results: results.map((result) => ({ ...result, favicon: 'data:image/png;base64,AA==' })) });
+  await new Promise(setImmediate);
+  assert.ok(list.children[1] === row);
+  assert.equal(row.attributes.get('aria-selected'), 'true');
+  assert.equal(list.scrollTop, 50);
+  assert.ok(row.querySelector('img'));
 });

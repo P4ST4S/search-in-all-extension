@@ -6,7 +6,7 @@
 - Brave est la cible de validation. L'utilisateur choisit le raccourci de l'extension dans `brave://extensions/shortcuts` ; Cmd+T est l'expérience visée. Ne pas transformer les restrictions de Chrome en interdiction supposée sur Brave.
 - La référence est la Command Bar d'Arc desktop, pas l'application mobile Arc Search ni son moteur de réponses IA.
 - Lire [la recherche et les captures](docs/research/arc-command-bar.md) avant de concevoir l'interface ou son activation.
-- v0.1.1 : ouverture/fermeture de la palette, URL/recherche via le moteur par défaut, recherche et activation d'onglets ouverts, recherche dans tous les dossiers de favoris. Historique et commandes supplémentaires restent hors périmètre.
+- v0.2.0 : ouverture/fermeture de la palette, URL/recherche via le moteur par défaut, recherche et activation d'onglets ouverts, recherche dans tous les dossiers de favoris, favicons des destinations. Historique et commandes supplémentaires restent hors périmètre.
 - Pas de navigateur complet, de sidebar, de Spaces, de synchronisation, de compte, de backend, d'IA ou de paiement dans ce premier périmètre.
 
 ## État et commandes
@@ -15,7 +15,7 @@
 - Node.js >= 22 pour les outils de développement. Aucune installation de paquets n'est nécessaire. Les skills sont dans `.agents/skills/` et leur inventaire dans `skills-lock.json`.
 - `npm test` : tests Node de logique et du contrôleur avec API simulées. `npm run check` : syntaxe JavaScript, manifeste et ressources. Ces deux commandes ont été exécutées avec succès au bootstrap.
 - `npm run preview` : aperçu local sur `http://127.0.0.1:4173/preview.html`, avec les vrais scripts UI et des données fictives. Commande vérifiée ; aucun test réel d'extension Brave ne doit en être déduit.
-- [README](README.md) : chargement, raccourci, limites et variantes de l'aperçu. [Validation v0.1.0 et v0.1.1](docs/validation/v0.1.0.md) : preuves et essais Brave restant à effectuer.
+- [README](README.md) : chargement, raccourci, limites et variantes de l'aperçu. [Validation v0.2.0](docs/validation/v0.2.0.md) et [validation v0.1.0 et v0.1.1](docs/validation/v0.1.0.md) : preuves et essais Brave restant à effectuer.
 
 ## Sources, documentation et skills
 
@@ -53,6 +53,8 @@
 - Si l'UI est injectée, isoler ses styles et empêcher les événements de la palette de déclencher des actions dans la page hôte.
 - Implémentation v0.1.0 : injection ponctuelle dans le monde isolé, Shadow DOM fermé et dialogue modal natif. Barre dans la partie haute, centrée horizontalement ; résultats vers le bas. La fenêtre de secours `fallback.html` est réservée aux pages internes, à la demande de l'utilisateur. Un échec d'injection sur une page web signale une erreur sans ouvrir une fenêtre. `core.js` expose uniquement un objet interne au contexte isolé, partagé avec le service worker et les tests sans bundler.
 - Sources conservées uniquement en mémoire pour une ouverture de palette ; relire à l'ouverture suivante, après redémarrage du worker ou après une erreur d'exécution. Priorité : onglets → favoris → action URL/web. Tab accepte le complément fantôme ; sinon il conserve la navigation accessible.
+- v0.2.0 : permission `favicon`, lecture de `runtime.getURL('_favicon/')` dans le worker uniquement. Le message `FAVICONS` relance la même recherche validée ; il n'accepte aucune URL à récupérer depuis le contenu. PNG transmis en données, sans ressource web accessible ni service tiers. Images chargées après le texte, cache propre à l'ouverture, erreurs non bloquantes, réponses périmées ignorées. Mettre à jour uniquement les images pour préserver sélection, défilement et annonces accessibles.
+- L'endpoint Chromium annonce les favicons `image/bmp` : valider les octets PNG plutôt que refuser ce MIME. L'aperçu réutilise le chargeur réel avec ce type de réponse ; ne pas considérer ses images locales comme une validation des API Brave.
 - Garder les opérations privilégiées dans le contexte d'extension approprié. Valider les messages, leurs paramètres et leur provenance ; une page web ne doit pas pouvoir lancer des actions privilégiées.
 - Justifier chaque permission par une fonctionnalité. Ne pas ajouter par défaut accès à tous les sites, historique, favoris, cookies ou réseau.
 - Traiter titres, URL et résultats comme des données non fiables : rendu texte, validation des destinations et refus des schémas exécutables.

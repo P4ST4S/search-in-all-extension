@@ -1,19 +1,29 @@
 const sources = {
   tabs: [
-    { kind: 'tab', id: 1, title: 'École — notes de recherche', url: 'https://ecole.example/notes', lastAccessed: 60 },
+    { kind: 'tab', id: 1, title: 'GitHub — école, dépôt de l’équipe', url: 'https://github.example/ecole', lastAccessed: 60 },
     { kind: 'tab', id: 2, title: 'Design — explorations', url: 'https://design.example/explorations', lastAccessed: 50 },
     { kind: 'tab', id: 3, title: 'École — planning', url: 'https://ecole.example/planning', lastAccessed: 40 },
     { kind: 'tab', id: 4, title: 'Documentation de l’équipe', url: 'https://docs.example/guide', lastAccessed: 30 },
     { kind: 'tab', id: 5, title: 'Musique pour travailler', url: 'https://musique.example', lastAccessed: 20 },
   ],
   bookmarks: [
-    { kind: 'bookmark', id: 'b1', title: 'École — ressources', url: 'https://ecole.example/ressources' },
+    { kind: 'bookmark', id: 'b1', title: 'GitHub — école, ressources', url: 'https://github.example/ressources' },
     { kind: 'bookmark', id: 'b2', title: 'Design — références', url: 'https://design.example/references' },
   ],
 };
 const previewOptions = new URLSearchParams(location.search);
 const fallbackPreview = previewOptions.get('surface') === 'fallback';
 const failure = previewOptions.get('failure');
+// Exercise the production loader with Chromium's image/bmp MIME type and a local PNG.
+const darkPreview = previewOptions.get('theme') !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches;
+const previewFavicon = import('/extension/favicons.js').then(({ createFaviconLoader }) => createFaviconLoader(
+  { getURL: (path) => `chrome-extension://preview/${path}` },
+  async () => {
+    const response = await fetch(`/tests/fixtures/github${darkPreview ? '-dark' : ''}.png`);
+    if (!response.ok) return response;
+    return new Response(await response.blob(), { headers: { 'Content-Type': 'image/bmp' } });
+  },
+)).catch(() => async () => '');
 if (failure === 'bookmarks') sources.bookmarks = [];
 globalThis.chrome = {
   runtime: {
@@ -24,6 +34,13 @@ globalThis.chrome = {
         if (failure === 'execute') return { ok: false, error: 'Ce résultat n’existe plus. Modifiez la recherche pour actualiser la liste.' };
         document.getElementById('executed').textContent = `Action simulée : ${JSON.stringify(message.action)}`;
         return { ok: true };
+      }
+      if (message.type === 'FAVICONS') {
+        await new Promise((resolve) => setTimeout(resolve, message.query?.length === 1 ? 250 : 30));
+        const favicon = failure === 'favicons' ? '' : failure === 'favicon-image' ? 'data:image/png;base64,AA==' : await (await previewFavicon)('https://github.example/');
+        return { ok: true, results: ArcCore.search(sources, message.query || '', 99).map((result) => ({
+          ...result, favicon: result.url.startsWith('https://github.example/') ? favicon : '',
+        })) };
       }
       // Different delays exercise out-of-order responses during fast typing.
       await new Promise((resolve) => setTimeout(resolve, message.query?.length === 1 ? 120 : 15));

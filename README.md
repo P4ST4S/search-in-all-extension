@@ -1,4 +1,4 @@
-# Arc Command Bar pour Brave — v0.1.1
+# Arc Command Bar pour Brave — v0.2.0
 
 Une palette au clavier pour retrouver un onglet, ouvrir un favori ou rechercher avec le moteur par défaut de Brave. JavaScript et CSS natifs, aucune dépendance, aucun build.
 
@@ -17,6 +17,7 @@ L’association et la priorité de Cmd+T doivent être vérifiées dans la versi
 - La palette apparaît dans la partie haute de la page, centrée horizontalement, et le champ prend le focus. Les résultats grandissent vers le bas sans déplacer le champ. À vide, la liste affiche jusqu’à cinq onglets récemment utilisés, hors onglet actuel.
 - La saisie cherche dans les titres et adresses de tous les onglets des fenêtres normales du profil et dans tous les dossiers de favoris. Le classement ignore casse et accents, et demande la présence de tous les mots.
 - Les onglets précèdent les favoris, puis vient l’action web. Chaque source affiche au maximum cinq résultats ; la liste défile si nécessaire.
+- Les onglets, favoris et adresses affichent le favicon du site lorsqu’il est disponible. Les images arrivent après les résultats, sans déplacer la sélection. Sans image ou en cas d’échec, une icône de secours reste affichée ; la recherche web conserve sa loupe.
 - **↑ / ↓** : choisir un résultat. **Entrée** : exécuter. Un onglet existant est activé avec sa fenêtre ; un favori, une adresse ou une recherche ouvre un nouvel onglet.
 - **Tab** : accepter le texte fantôme lorsqu’il existe et que le curseur est en fin de saisie, sans ouvrir la destination. Sinon, Tab et Maj+Tab naviguent entre le champ et le bouton de fermeture.
 - **Échap**, clic extérieur, bouton de fermeture ou second déclenchement : fermer. La page et son champ d’origine retrouvent le focus.
@@ -31,7 +32,9 @@ Sur une page interne comme `brave://settings`, une petite fenêtre séparée con
 
 Sur une page web, le bouton et le raccourci utilisent la superposition. Si l’injection échoue (par exemple sur le store), aucune fenêtre supplémentaire n’est ouverte : un badge `!` et l’infobulle du bouton signalent l’échec. Réessayer sur une page web ordinaire.
 
-Permissions : `activeTab` et `scripting` pour l’affichage à la demande, `tabs` pour les titres/adresses, `bookmarks` pour lire les favoris, `search` pour le moteur par défaut. Brave peut avertir que l’extension peut modifier les favoris : l’API accorde ce droit, mais cette version n’utilise que ses opérations de lecture.
+Permissions : `activeTab` et `scripting` pour l’affichage à la demande, `tabs` pour les titres/adresses, `bookmarks` pour lire les favoris, `search` pour le moteur par défaut, `favicon` pour les images des sites fournies par le navigateur. Brave peut avertir que l’extension peut modifier les favoris : l’API accorde ce droit, mais cette version n’utilise que ses opérations de lecture.
+
+Les favicons sont lus via l’adresse interne de l’extension et transmis à la palette en PNG, sans exposer cet accès aux pages web. Aucun service tiers de favicons ni téléchargement direct depuis les sites n’est ajouté. Le cache de l’extension est en mémoire et renouvelé à l’ouverture.
 
 Recherche et classement locaux, aucun stockage persistant, historique, télémétrie ou service distant. Seule une recherche web explicitement exécutée est transmise au moteur configuré. Les titres et adresses sont rendus en texte et les schémas exécutables sont refusés. La navigation privée n’est pas prise en charge.
 
@@ -55,9 +58,10 @@ Variantes de vérification :
 - `?surface=fallback&theme=light` : force les règles claires dans cette fixture, sans changer le thème système.
 - `?failure=bookmarks` : source favoris indisponible.
 - `?failure=execute` : résultat disparu lors de l’exécution.
+- `?failure=favicons` : aucune image disponible ; `?failure=favicon-image` : image invalide pour vérifier le secours.
 - `?editor=chat&focus-race=1` : éditeur de chat fictif avec gestionnaires qui tentent de reprendre le focus et bloquent les touches de suppression. Vérifier la saisie dans la palette, Retour arrière, Suppr, Cmd+A puis suppression, Tab/Maj+Tab et la restitution du focus à l’éditeur après Échap. Ajouter `&surface=fallback` pour inspecter le champ dans une racine ouverte.
 
-L’aperçu ne valide ni les API d’extension, ni Cmd+T, ni le moteur par défaut de Brave. Les essais réalisés et la checklist Brave sont dans [le compte rendu de validation](docs/validation/v0.1.0.md).
+L’aperçu ne valide ni les API d’extension, ni Cmd+T, ni le moteur par défaut de Brave. Les essais réalisés sont dans [la validation v0.2.0](docs/validation/v0.2.0.md), avec [la checklist Brave initiale](docs/validation/v0.1.0.md). Le favicon GitHub officiel utilisé dans la fixture est fourni localement, sans modification ; les adresses et contenus restent fictifs.
 
 ## Organisation
 

@@ -1,4 +1,5 @@
 import './core.js';
+import { createFaviconLoader } from './favicons.js';
 
 const { search, safeUrl, bookmarksFromTree, destination } = globalThis.ArcCore;
 const ERRORS = {
@@ -90,8 +91,8 @@ export function createController(api) {
 
   async function handle(message, sender) {
     try {
-      if (!message || !['INIT', 'SEARCH', 'EXECUTE'].includes(message.type)) throw new Error(ERRORS.invalid);
-      if (message.type === 'SEARCH' && (typeof message.query !== 'string' || message.query.length > 2048)) throw new Error(ERRORS.invalid);
+      if (!message || !['INIT', 'SEARCH', 'FAVICONS', 'EXECUTE'].includes(message.type)) throw new Error(ERRORS.invalid);
+      if (['SEARCH', 'FAVICONS'].includes(message.type) && (typeof message.query !== 'string' || message.query.length > 2048)) throw new Error(ERRORS.invalid);
       const { tab, source } = await context(sender);
       const key = tab.id;
       if (message.type === 'EXECUTE') {
@@ -101,10 +102,15 @@ export function createController(api) {
       }
       // shortcut: sources refresh on opening, add live updates if in-palette changes become necessary.
       if (message.type === 'INIT' || !sessions.has(key) || sessions.get(key).documentId !== sender.documentId) {
-        sessions.set(key, { documentId: sender.documentId, sources: load() });
+        sessions.set(key, { documentId: sender.documentId, sources: load(), favicon: createFaviconLoader(api.runtime) });
       }
-      const sources = await sessions.get(key).sources;
-      return { ok: true, results: search(sources, message.type === 'INIT' ? '' : message.query, source.id), warnings: sources.warnings };
+      const snapshot = sessions.get(key);
+      const sources = await snapshot.sources;
+      const results = search(sources, message.type === 'INIT' ? '' : message.query, source.id);
+      if (message.type === 'FAVICONS') {
+        return { ok: true, results: await Promise.all(results.map(async (result) => ({ ...result, favicon: await snapshot.favicon(result.url) }))) };
+      }
+      return { ok: true, results, warnings: sources.warnings };
     } catch (error) {
       return { ok: false, error: Object.values(ERRORS).includes(error.message) ? error.message : 'Cette action a échoué. Rouvrez la palette et réessayez.' };
     }
