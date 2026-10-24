@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Arc Command Bar",
+  "description": "Une palette pour rechercher sur le web, retrouver un onglet et ouvrir un favori dans Brave.",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "scripting", "tabs", "bookmarks", "search"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_title": "Ouvrir Arc Command Bar" },
+  "commands": {
+    "_execute_action": { "description": "Ouvrir ou fermer la palette" }
+  },
+  "incognito": "not_allowed",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'"
+  }
+}

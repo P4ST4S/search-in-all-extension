@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arc Command Bar — aperçu avec données fictives</title>
+  <style>
+    :root { color-scheme: light dark; font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #eeedf3; color: #332d40; }
+    body { margin: 0; padding: 40px; } main { max-width: 620px; margin: 0 auto; }
+    h1 { font-size: 22px; font-weight: 600; } p { color: #655f73; }
+    button, input { font: inherit; padding: 8px 14px; border: 1px solid #aca2bb; border-radius: 8px; }
+    #executed { white-space: pre-wrap; }
+    @media (prefers-color-scheme: dark) { :root { background: #191820; color: #f3f0f7; } p { color: #b9b2c6; } }
+  </style>
+  <script src="/extension/core.js" defer></script>
+  <script src="/tests/preview.js" defer></script>
+  <script src="/extension/palette.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Arc Command Bar · v0.1.0</h1>
+    <p>Aperçu de l’interface avec des données fictives. F8 simule le déclenchement. Les API Brave ne sont pas disponibles dans cet aperçu.</p>
+    <button id="open" type="button">Ouvrir la palette</button>
+    <p><label>Champ de départ <input id="previous" value="Mon texte reste ici"></label></p>
+    <p id="executed" role="status"></p>
+    <p>Événements clavier reçus par la page hôte : <span id="host-keys">0</span></p>
+  </main>
+</body>
+</html>

@@ -86,3 +86,17 @@ Sources : [AGENTS.md](https://agents.md/), [OpenAI — instructions projet](http
 - Surface de secours sur les pages où l'injection échoue ; permissions nécessaires à cette approche.
 - Moteur de recherche, règles de classement et rendu clair/sombre.
 - Validation visuelle sur les références ci-dessus et tests de focus, d'accessibilité et d'activation d'onglets.
+
+## Décisions v0.1.0 — 24 octobre 2026
+
+Le périmètre demandé inclut désormais les favoris et le moteur par défaut. L’ordre choisi par l’utilisateur est **onglets → favoris → recherche** ; les nouvelles destinations s’ouvrent dans un nouvel onglet. La barre est centrée, les résultats se développent dessous et Tab accepte un complément fantôme. Une fenêtre compacte séparée sert de secours. Les exemples précédents décrivent la recherche initiale ; ces décisions fixent l’implémentation actuelle.
+
+- Base native MV3, JavaScript/CSS sans framework, dépendance ou compilation. Les scripts injectés restent classiques ; le service worker utilise les modules ES. Le petit noyau de recherche est partagé sans bundler.
+- Recherche web via `chrome.search.query({ text, tabId })`. Un onglet cible explicite dans la fenêtre d’origine évite de lancer la recherche dans la fenêtre de secours. Aucun moteur n’est codé en dur. [Search API](https://developer.chrome.com/docs/extensions/reference/api/search)
+- `bookmarks.getTree()` fournit les favoris de tous les dossiers pour un classement local commun avec les onglets. Les sources sont relues à chaque ouverture, pas synchronisées en permanence. [Bookmarks API](https://developer.chrome.com/docs/extensions/reference/api/bookmarks)
+- `_execute_action` déclenche le même gestionnaire `action.onClicked` que le bouton ; l’utilisateur configure son raccourci. L’injection ponctuelle utilise `activeTab` et `scripting`, sans permission d’hôte permanente. [Commands API](https://developer.chrome.com/docs/extensions/reference/api/commands), [activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab)
+- Les réponses asynchrones conservent le canal de messagerie avec `return true`. Le contrôleur accepte aussi l’absence de `sender.tab` pour notre propre page de secours, après avoir retrouvé la page et vérifié sa fenêtre. [Messaging](https://developer.chrome.com/docs/extensions/develop/concepts/messaging), [MessageSender](https://developer.chrome.com/docs/extensions/reference/api/runtime#type-MessageSender)
+
+Ces références ont été consultées via Context7 pour l’implémentation. À la demande ultérieure de l’utilisateur, la validation visuelle a été faite dans le navigateur interne ; le fonctionnement réel dans Brave reste à vérifier. Voir [le compte rendu](../validation/v0.1.0.md).
+
+Retour utilisateur après essai : conserver la fenêtre de secours sur les pages internes uniquement et remonter la barre dans la partie haute de la page. L’implémentation réserve donc la création d’une fenêtre aux schémas internes ; un échec d’injection web est signalé sans fenêtre supplémentaire. La barre reste centrée horizontalement et ses résultats s’étendent vers le bas. Ces décisions remplacent le placement vertical centré et le secours automatique sur toute erreur mentionnés précédemment.
