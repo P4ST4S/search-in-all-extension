@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "skills": {
+    "build-chrome-extension": {
+      "source": "yigitkonur/skills-by-yigitkonur",
+      "sourceType": "github",
+      "skillPath": "skills/build-chrome-extension/SKILL.md",
+      "computedHash": "5b913b5aeb9db8a93458a61967bc209e8b439d080cd30b37422a5c52e0330bac"
+    },
+    "extension-analyze": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-analyze/SKILL.md",
+      "computedHash": "dd44c9f2faab98e2df4f977be1b9b400bf850fe3d4b95794b398b99eb72a59fd"
+    },
+    "extension-assets": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-assets/SKILL.md",
+      "computedHash": "f57cb615cb35205d600b696ecf93226c51479df6d5d068138555c17d1dee8beb"
+    },
+    "extension-backend": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-backend/SKILL.md",
+      "computedHash": "1e9168a1517db659260cc2cefed5e2381d2c2ff9c989bc164917071ce71bf8c4"
+    },
+    "extension-create": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-create/SKILL.md",
+      "computedHash": "b07687b9aea16dd87dcf9305e97d2d0c6215f5204be47381df054985e6705ebb"
+    },
+    "extension-dev": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-dev/SKILL.md",
+      "computedHash": "d56c531ed25c30a2e348d88648eb7804b13576eceae4c36fef3fb60774cf2ad1"
+    },
+    "extension-manifest": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-manifest/SKILL.md",
+      "computedHash": "6f4627582279bf04ae21247b0bcacd521190190191831f6b51460ef43b8afc57"
+    },
+    "extension-migration": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-migration/SKILL.md",
+      "computedHash": "263af2b0827861f7131d936ba125ac00c436f015a4cb9640fe1798d7d253317c"
+    },
+    "extension-payment": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-payment/SKILL.md",
+      "computedHash": "1cca2f2d12ba1db70544067bb352911f787836f507b9f191a13958a2f54535df"
+    },
+    "extension-publish": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-publish/SKILL.md",
+      "computedHash": "359a4dedf5597f34c1b3206cc0f2d9f0572db08edfbcc8e25bc2e03e692f4f83"
+    },
+    "extension-review": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-review/SKILL.md",
+      "computedHash": "6bcb5c99a395e6775ed89ff96019455a34d3d5fdc453977621a58e22113261f9"
+    },
+    "extension-test": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-test/SKILL.md",
+      "computedHash": "0769bea2e23e99968bc34d5ae75a5b4f23c43df1cad98045fabad031adac8f2b"
+    },
+    "extension-ui": {
+      "source": "quangpl/browser-extension-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extension-ui/SKILL.md",
+      "computedHash": "8bcaac7c11efef7fea1f2ffe23bf1abc5c99ab67ae597395e821988a3b00a3cd"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "89496d5dd00f4810205f351759594fc2742bf8eea85a2f2b2d1de59f4bd91576"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/composition-patterns/SKILL.md",
+      "computedHash": "f98931159fa9c7fed043bcd18a891a46dcf89ababa38df13a4c5b7b30dc0ce07"
+    },
+    "vercel-optimize": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/vercel-optimize/SKILL.md",
+      "computedHash": "9d4ace02972b9b1c462f097c7322eb32c9f04bba6f2fb5cf482086d402eeec33"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    },
+    "writing-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/writing-guidelines/SKILL.md",
+      "computedHash": "e90462d4f801d823603b12c345ad0ff91a7489415274432681d21c7129123c26"
+    }
+  }
+}
